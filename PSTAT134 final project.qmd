@@ -1,0 +1,68 @@
+---
+title: "Recommender System for Diners"
+subtitle: "subtitle subtitle subtitle"
+author: "Kuan-I Lu, Caitlyn Vasqeuz, Lucas Joseph, Richard Keith"
+date: last-modified
+published-title: "Updated"
+editor: visual
+format: html
+code-copy: true
+execute:
+  message: false
+  warning: false
+  echo: false
+  cache: true
+---
+
+## Introduction 
+
+**Write here**
+
+### Inspiration and Motive
+
+**Write here**
+
+### Data Description
+
+**Write here**
+
+## Methodology
+
+**Write here**
+**Read the Reading about unsupervised learning first**
+**List out all the models we use**
+
+## Load and Clean the Dataset
+
+**Write here**
+
+### Obtain Data Through Yelp API
+
+
+
+### Data Cleaning
+
+
+
+
+
+
+
+
+
+
+
+## EDA
+
+
+## Model Fitting and Selection
+
+
+##  Results
+
+
+
+
+
+
+
