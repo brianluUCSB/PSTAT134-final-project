@@ -25,6 +25,9 @@ execute:
 ### Data Description
 
 **Write here**
+Since we don't require real time data, and Yelp fusion with enough attributes are restricted to business owners only, we use the open source fixed dataset that Yelp provides.
+
+Link that we download the datset from: https://www.yelp.com/dataset/download
 
 ## Methodology
 
@@ -35,6 +38,19 @@ execute:
 ## Load and Clean the Dataset
 
 **Write here**
+
+```{r}
+library(jsonlite)
+library(tidyverse)
+
+# Load and inspect the datasets
+business = stream_in(file("C:/D/homework/PSTAT 134/data/yelp_academic_dataset_business.json"))
+tip = stream_in(file("C:/D/homework/PSTAT 134/data/yelp_academic_dataset_tip.json"))
+
+# See if reviews can be useful, if not stick to what we have
+
+```
+
 
 ### Obtain Data Through Yelp API
 
