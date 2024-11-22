@@ -42,8 +42,10 @@ Link that we download the datset from: https://www.yelp.com/dataset/download
 ```{r}
 library(jsonlite)
 library(tidyverse)
+library(dplyr)
 library(ggplot2)
 library(naniar)
+library(rsample)
 #library(recosystem)
 
 # Load and inspect the datasets
@@ -60,16 +62,34 @@ review %>% distinct(user_id) %>% nrow()
 
   From the business dataset, we have information of 150,346 distinct businesses.
   From the reveiw dataset, we have 6,990,280 reviews, on the 150,346 distinct businesses, by 1,987,929 distinct users.
+  
+  Note we will mainly use review for training and business for business name matching and potentially content based training.
 
 ```{r}
 # Exploratory code
 review
-
+business
 ```
 
 
 
 ### Data Cleaning
+
+#### restaurants
+
+  First, since this project is a restaurant recommender, and Yelp contains all kinds of business in their dataset, we will focus on the businesses with "Food" or "Restaurants" in their `categories`. After filtering, we call the filtered dataset "restaurant".
+  
+```{r}
+# Filter only businesses that are restaurants
+restaurants = business %>%
+  filter(grepl("Food|Restaurants", categories))
+
+# 64616
+```
+  
+  Note that now we only have 64616 unique observations.
+  
+#### review_clean
 
   For the sake of saving memory space, we filter out the text review the moment we imported the review data. Notice that the explicit data include stars, useful, funny, and cool, which we will focus on using stars for the purpose of this project. In addition, we assign the review id as the row number of that review.
   
@@ -78,18 +98,88 @@ review
 review_clean = as_tibble(review) %>% 
   mutate(review_id = row_number()) %>% 
   select(review_id, user_id, business_id, stars) 
+```
+  
+  Also, since we're only focusing on the restaurants, we only want to work with reviews on restaurants (businesses_ids in the restaurant dataset).
+  
+```{r}
+# Filter only reviews on restaurants
+review_clean = review_clean %>% 
+  filter(business_id %in% restaurants$business_id)
 
-review_clean %>% vis_miss()
+# 5126140
+```
+  
+  After filtering, we reduce the number of reviews to 5126140, with 64616 restaurants rated by 1505616 users.
+  
+  Lastly, we check for missing values to see if any imputation is needed
+  
+```{r}
+# Check for missing values
+review_clean %>% vis_miss(warn_large_data = FALSE)
 
 ```
 
+  Luckily, there are no missing values in review_clean. 
+  
+#### user_item_rating
+
+  In order to perform collaborative filtering, the dataset has to be in the form of a user-item-matrix form. He we will perform this transformation.
 
 
+```{r}
+# Convert dataset to user-item-matrix
+review_clean %>% 
+  pivot_wider(id_cols = user_id,
+              names_from = business_id,
+              values_from = stars,
+              values_fill = list(stars = NA))
+```
+
+  The resulting dataset is too large for R to handle. For now, lets cut the number of users down to a very small amount, then gradually increase the number of users after we make sure the whole architecture is robust. Lets take a deeper look of the dataset to have a better idea on how to filter to a smaller dataset.
+  
+```{r}
+# Check the distribution of reviews per user
+review_clean %>% 
+  group_by(user_id) %>% 
+  count() %>% ggplot(aes(x = n)) + geom_histogram() + xlim(0, 100)
+
+# Filter the users with more than 10 comments
+user_10_up = review_clean %>% 
+  group_by(user_id) %>% 
+  count() %>% 
+  filter(n >= 10)
+
+# 84958 users with more than 10 reviews
+```
+  
+  
+##### Note: Work with a mini subset first, then come back to increase sample size (user amount)
+
+```{r}
+# Result too large, work with a subset of users
+set.seed(112124)
+
+partition = initial_split(user_10_up, prop = 0.1)
+users_subset = training(partition)
 
 
+review_clean_subset = review_clean %>% 
+  filter(user_id %in% users_subset$user_id)
+```
 
-
-
+  Try to construct the user-item-matrix again.
+  
+```{r}
+# Convert subsetted dataset to user-item-matrix
+as_tibble(review_clean_subset) %>% 
+  pivot_wider(id_cols = user_id,
+              names_from = business_id,
+              values_from = stars,
+              values_fill = NA)
+```
+  
+Note: might be too sparse to work with. Try to work with Jupyter notebook
 
 
 ## EDA
@@ -104,9 +194,10 @@ review_clean %>% vis_miss()
 
 ##### Questions
 
- - how to assess result
- - is the data type valid for training
+ - how to assess result if want to evaluate model.
+ - How to combine content based and collaborate filtering. 
  - How to implement if want to do specific filtering (city, cuisine, etc). Filter before or after finding the similar items? I think should be after because we use everything to calculate similarity matrix.
-
+ - When constructing user item matrix, which one should be on rows.
+ - Isn't content based method in lab 8 just based on the similarity based on the attributes of each items
 
 
