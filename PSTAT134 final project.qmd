@@ -42,22 +42,46 @@ Link that we download the datset from: https://www.yelp.com/dataset/download
 ```{r}
 library(jsonlite)
 library(tidyverse)
+library(ggplot2)
+library(naniar)
+#library(recosystem)
 
 # Load and inspect the datasets
-business = stream_in(file("C:/D/homework/PSTAT 134/data/yelp_academic_dataset_business.json"))
-tip = stream_in(file("C:/D/homework/PSTAT 134/data/yelp_academic_dataset_tip.json"))
-
+business = stream_in(file("C:/D/homework/PSTAT 134/data/yelp_academic_dataset_business.json")) # 150346 distinct business_id
+review = stream_in(file("C:/D/homework/PSTAT 134/data/yelp_academic_dataset_review.json"))
+review = review %>% select(review_id, user_id, business_id, stars, useful, funny, cool)
 # See if reviews can be useful, if not stick to what we have
 
+business %>% distinct(business_id) %>% nrow()
+review %>% nrow()
+review %>% distinct(business_id) %>% nrow()
+review %>% distinct(user_id) %>% nrow()
 ```
 
+  From the business dataset, we have information of 150,346 distinct businesses.
+  From the reveiw dataset, we have 6,990,280 reviews, on the 150,346 distinct businesses, by 1,987,929 distinct users.
 
-### Obtain Data Through Yelp API
+```{r}
+# Exploratory code
+review
+
+```
 
 
 
 ### Data Cleaning
 
+  For the sake of saving memory space, we filter out the text review the moment we imported the review data. Notice that the explicit data include stars, useful, funny, and cool, which we will focus on using stars for the purpose of this project. In addition, we assign the review id as the row number of that review.
+  
+```{r}
+# Select the useful columns
+review_clean = as_tibble(review) %>% 
+  mutate(review_id = row_number()) %>% 
+  select(review_id, user_id, business_id, stars) 
+
+review_clean %>% vis_miss()
+
+```
 
 
 
@@ -78,7 +102,11 @@ tip = stream_in(file("C:/D/homework/PSTAT 134/data/yelp_academic_dataset_tip.jso
 
 
 
+##### Questions
 
+ - how to assess result
+ - is the data type valid for training
+ - How to implement if want to do specific filtering (city, cuisine, etc). Filter before or after finding the similar items? I think should be after because we use everything to calculate similarity matrix.
 
 
 
