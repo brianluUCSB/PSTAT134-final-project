@@ -199,5 +199,31 @@ Note: might be too sparse to work with. Try to work with Jupyter notebook
  - How to implement if want to do specific filtering (city, cuisine, etc). Filter before or after finding the similar items? I think should be after because we use everything to calculate similarity matrix.
  - When constructing user item matrix, which one should be on rows.
  - Isn't content based method in lab 8 just based on the similarity based on the attributes of each items
+ 
+##### Answers
+
+ - If want to do app, create a list of restaurants, have user rate the restaurants, then output list of restaurants with highest cosine similarity by:
+ 
+   - content based recommendation: use the values of selection to create a user vector, find restaurants with the closest cosine similarity in terms of features.
+   - collaborative filtering: add the user input to the user-item matrix, output the highest predicted unrated item.
+   
+ - Otherwise, keep it simple and just show we can give prediction if entered a restaurant, maybe use weighted cosine similarity of content based method and collaborative filtering to give recommendation. Given enough money, we can tune the mixing proportion.
+
+   - *This might be better given the time of this project*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
